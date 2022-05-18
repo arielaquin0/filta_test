@@ -1,0 +1,137 @@
+<!doctype html>
+<head xmlns="http://www.w3.org/1999/html">
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Cart</title>
+    <link rel="stylesheet" href="vendors/css/grid.css" />
+    <link rel="stylesheet" href="vendors/css/ionicons.min.css" />
+    <link rel="stylesheet" href="public/css/style.css"/>
+    <link rel="stylesheet" href="public/css/queries.css"/>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <div class="row bg-gray">
+                <div class="dropdown">
+                    <a href="javascript:" onclick="handleClick()" class="dropbtn">
+                        <i class="ion-ios-cart-outline dropdown-icon"></i>
+                        <span class="dropdown-text">My Cart</span> ( {{totalItems()}} )
+                    </a>
+                    <div id="myDropdown" class="dropdown-content">
+                        <div class="cart" v-for="cart in carts">
+                            <div>
+                                <img :src="cart.image" alt="classic-tee" />
+                            </div>
+                            <div>
+                                <h3>{{cart.name}}</h3>
+                                <span>{{cart.selected.count}} x <strong>{{cart.price}}</strong></span>
+                                <span>Size: {{cart.selected.size}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <section>
+            <div class="row">
+                <div class="col span-1-of-2 col-image">
+                    <img :src="product.image" alt="classic-tee" />
+                </div>
+                <div class="col span-1-of-2 col-desc">
+                    <h3>{{product.name}}</h3>
+                    <div>{{product.price}}</div>
+                    <p>{{product.description}}</p>
+                    <div>
+                        SIZE<span>*</span> {{product.selected.size}}
+                    </div>
+                    <div>
+                        <button v-for="size in sizes" @click="selectedSize(size)">{{size}}</button>
+                    </div>
+                    <div>
+                        <button @click="addToCart(product)">ADD TO CART</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
+
+<script>
+function handleClick() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+window.onclick = function(event) {
+    if (!event.target.matches('.dropbtn') && !event.target.matches('.dropdown-text') && !event.target.matches('.dropdown-icon')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            const openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
+const app = new Vue({
+	el: '#app',
+	
+	data: {
+	    product: {
+	        name: 'Classic Tee',
+            image: 'public/img/classic-tee.jpg',
+            price: '$75.00',
+            description: 'Dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+            selected: {
+	            size: null,
+                count: 0
+            }
+        },
+        sizes: ['S','M','L'],
+        carts: []
+	},
+
+	mounted() {
+	    // push sample items to cart
+        const product = JSON.stringify(this.product);
+        this.carts.push(JSON.parse(product))
+        this.carts.push(JSON.parse(product))
+        this.carts[0].selected = {size: "S", count: 1}
+        this.carts[1].selected = {size: "L", count: 1}
+	},
+	
+	methods: {
+        addToCart(product) {
+            if (!product.selected.size) {
+                alert('Please choose size');
+                return
+            }
+
+            product = JSON.parse(JSON.stringify(product)); //clone
+            const i = this.carts.findIndex(obj => obj.selected.size === product.selected.size);
+            const {carts} = this;
+            if(i >= 0) {
+                carts[i].selected.count += 1;
+            }
+            else {
+                product.selected.count += 1;
+                carts.push(product) //push to cart
+            }
+            this.product.selected = {size: null, count: 0}
+        },
+
+        selectedSize(size) {
+            this.product.selected.size = size
+        },
+
+        totalItems() {
+            return this.carts.reduce((sum, obj) => sum + obj.selected.count, 0);
+        }
+	}
+})
+</script>
